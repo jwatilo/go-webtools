@@ -1,6 +1,7 @@
 package toolkit
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
@@ -257,13 +258,11 @@ func (t *Tools) ReadJSON(w http.ResponseWriter, r *http.Request, data interface{
 
 	err := dec.Decode(data)
 	if err != nil {
-
 		var syntaxError *json.SyntaxError
 		var unmarshalTypeError *json.UnmarshalTypeError
 		var invalidUnmarshalError *json.InvalidUnmarshalError
 
 		switch {
-
 		case errors.As(err, &syntaxError):
 			return fmt.Errorf("body contains badly-formed JSON (at character %d)", syntaxError.Offset)
 
@@ -272,7 +271,6 @@ func (t *Tools) ReadJSON(w http.ResponseWriter, r *http.Request, data interface{
 
 		case errors.As(err, &unmarshalTypeError):
 			if unmarshalTypeError.Field != "" {
-
 				return fmt.Errorf("body contains incorrect JSON type for field %q", unmarshalTypeError.Field)
 			}
 			return fmt.Errorf("body contains incorrect JSON type (at character %d)", unmarshalTypeError.Offset)
@@ -294,7 +292,6 @@ func (t *Tools) ReadJSON(w http.ResponseWriter, r *http.Request, data interface{
 			return err
 		}
 	}
-
 	err = dec.Decode(&struct{}{})
 	if err != io.EOF {
 
@@ -347,4 +344,42 @@ func (t *Tools) ErrorJSON(w http.ResponseWriter, err error, status ...int) error
 	payload.Message = err.Error()
 
 	return t.WriteJSON(w, statusCode, payload)
+}
+
+// PushJSONToRemote posts arbitrary data to some URL as JSON, and returns the response, status code, and error (if any).
+// The final parameter, client, is optional. If none is specified, we use the standard http.Client.
+func (t *Tools) PushJSONToRemote(uri string, data interface{}, client ...*http.Client) (*http.Response, int, error) {
+
+	// create json
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+
+		return nil, 0, err
+	}
+
+	// check for custom http client
+	httpClient := &http.Client{}
+	if len(client) > 0 {
+
+		httpClient = client[0]
+	}
+
+	// build request and set the header
+	request, err := http.NewRequest("POST", uri, bytes.NewBuffer(jsonData))
+	if err != nil {
+
+		return nil, 0, err
+	}
+	request.Header.Set("Content-Type", "application/json")
+
+	// call the remote uri
+	response, err := httpClient.Do(request)
+	if err != nil {
+
+		return nil, 0, err
+	}
+	defer response.Body.Close()
+
+	// send response back
+	return response, response.StatusCode, nil
 }
