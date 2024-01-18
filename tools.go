@@ -26,7 +26,7 @@ type Tools struct {
 	AllowUnknownFields bool
 }
 
-// RandomString returns a string of random characters of length n, using randomStringSOurce
+// RandomString returns a string of random characters of length n, using randomStringSource
 // as the source for the string
 func (t *Tools) RandomString(n int) string {
 
@@ -48,7 +48,7 @@ type UploadedFile struct {
 	FileSize         int64
 }
 
-// UploadOneFile is just a convenience method that calles UploadFiles, but expects only one file to
+// UploadOneFile is just a convenience method that calls UploadFiles, but expects only one file to
 // be in the upload.
 func (t *Tools) UploadOneFile(r *http.Request, uploadDir string, rename ...bool) (*UploadedFile, error) {
 
