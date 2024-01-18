@@ -1,6 +1,6 @@
-# Toolkit
+# GO Web Ttools
 
-A simple example of how to create a reusable Go module with commonly used tools.
+A reusable GO module with commonly used tools for web development.
 
 The included tools are:
 
@@ -16,4 +16,4 @@ The included tools are:
 
 ## Installation
 
-`go get -u github.com/jwatilo/toolkit`
+`go get -u github.com/jwatilo/go-webtools`
